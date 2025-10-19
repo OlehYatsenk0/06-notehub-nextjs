@@ -2,47 +2,34 @@
 
 import css from './Pagination.module.css';
 
-interface PaginationProps {
-  page: number;
+interface Props {
+  currentPage: number;
   totalPages: number;
-  onChange: (page: number) => void;
-  disabled?: boolean;
+  onPageChange: (p: number) => void;
+  isFetching?: boolean;
 }
 
-export default function Pagination({
-  page,
-  totalPages,
-  onChange,
-  disabled = false,
-}: PaginationProps) {
+export default function Pagination({ currentPage, totalPages, onPageChange, isFetching }: Props) {
   if (totalPages <= 1) return null;
-
-  const handlePrev = () => {
-    if (page > 1) onChange(page - 1);
-  };
-
-  const handleNext = () => {
-    if (page < totalPages) onChange(page + 1);
-  };
 
   return (
     <div className={css.pagination}>
       <button
         className={css.button}
-        onClick={handlePrev}
-        disabled={page === 1 || disabled}
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage <= 1 || isFetching}
       >
         Prev
       </button>
 
-      <span className={css.page}>
-        Page {page} of {totalPages}
+      <span className={css.pageInfo}>
+        Page {currentPage} of {totalPages}
       </span>
 
       <button
         className={css.button}
-        onClick={handleNext}
-        disabled={page === totalPages || disabled}
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages || isFetching}
       >
         Next
       </button>

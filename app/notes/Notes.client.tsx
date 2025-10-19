@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
@@ -22,41 +22,29 @@ export default function NotesClient() {
     placeholderData: keepPreviousData,
   });
 
-  const totalPages = data?.totalPages ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   return (
     <div className={css.container}>
       <div className={css.header}>
         <h1 className={css.title}>Notes</h1>
-
         <Modal trigger={<button className={css.createButton}>Create note</button>}>
-          <NoteForm onClose={() => {}} />
+          <NoteForm />
         </Modal>
       </div>
 
-      <SearchBox value={search} onChange={setSearch} />
+      <SearchBox onSearch={(v) => { setSearch(v); setPage(1); }} />
 
-      {isLoading && <p className={css.status}>Loading, please wait...</p>}
-      {isError && (
-        <p className={css.status}>
-          Could not fetch the list of notes. {(error as Error)?.message}
-        </p>
-      )}
-
-      {data && data.notes.length > 0 ? (
-        <NoteList notes={data.notes} />
-      ) : (
-        !isLoading && <p className={css.status}>No notes found.</p>
-      )}
+      {isLoading && <p>Loading notes...</p>}
+      {isError && <p>Error: {(error as Error).message}</p>}
+      {data && <NoteList notes={data.notes} />}
 
       <Pagination
-        page={page}
+        currentPage={page}
         totalPages={totalPages}
-        onChange={setPage}
-        disabled={isFetching}
+        onPageChange={setPage}
+        isFetching={isFetching}
       />
-
-      {isFetching && !isLoading && <p className={css.status}>Updating...</p>}
     </div>
   );
 }

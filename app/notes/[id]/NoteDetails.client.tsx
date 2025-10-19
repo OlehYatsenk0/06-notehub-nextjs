@@ -11,7 +11,7 @@ export default function NoteDetailsClient({ id }: { id: string }) {
   });
 
   if (isLoading) return <p>Loading, please wait...</p>;
-  if (isError || !note) return <p>Something went wrong. {(error as Error)?.message}</p>;
+  if (isError || !note) return <p>Something went wrong.</p>;
 
   return (
     <div className={css.container}>

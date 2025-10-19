@@ -1,41 +1,45 @@
 'use client';
 
-import React, { useState, ReactElement } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 
-interface ModalProps {
-  trigger: ReactElement<{ onClick?: () => void }>;
+export default function Modal({
+  trigger,
+  children,
+}: {
+  trigger: React.ReactNode;
   children: React.ReactNode;
-}
-
-export default function Modal({ trigger, children }: ModalProps) {
+}) {
   const [open, setOpen] = useState(false);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
- 
-  const triggerWithHandler = React.cloneElement(trigger, {
-    onClick: handleOpen,
-  });
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', onEsc);
+    } else {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onEsc);
+    }
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [open]);
 
   return (
     <>
-      {triggerWithHandler}
-
-      {open && (
-        <div className={css.backdrop} onClick={handleClose}>
-          <div
-            className={css.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={css.close} onClick={handleClose}>
-              ✕
-            </button>
-            {children}
-          </div>
-        </div>
-      )}
+      <span onClick={() => setOpen(true)}>{trigger}</span>
+      {open &&
+        createPortal(
+          <div className={css.backdrop} onClick={() => setOpen(false)}>
+            <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+              <button className={css.closeBtn} onClick={() => setOpen(false)}>
+                ✕
+              </button>
+              {children}
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }
