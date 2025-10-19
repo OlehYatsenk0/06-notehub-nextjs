@@ -7,7 +7,7 @@ interface NoteDetailsPageProps {
 }
 
 export default async function NoteDetailsPage({ params }: NoteDetailsPageProps) {
-  const { id } = await params; // ✅ тепер params - це Promise
+  const { id } = await params;
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({

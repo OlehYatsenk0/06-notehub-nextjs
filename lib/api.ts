@@ -1,28 +1,26 @@
 import axios from 'axios';
 import type { Note, NoteTag } from '@/types/note';
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://notehub-public.goit.study/api';
-const token =
-  process.env.NEXT_PUBLIC_NOTEHUB_TOKEN ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InlhdHNlbmtvLnByb2dAZ21haWwuY29tIiwiaWF0IjoxNzYwMTk5NTg4fQ.pjtHCgXnXkg5wxaZPVZ_QygQzrF-4ZVGi7MaAe6Wn08';
-
-export const instance = axios.create({
-  baseURL: 'https://notehub-public.goit.study/api', // 🔥 завжди явно
-  headers: {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  },
-});
+const API_URL = 'https://notehub-public.goit.study/api';
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 export interface FetchNotesParams {
   page: number;
   search: string;
 }
+
 export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
+
+const instance = axios.create({
+  baseURL: API_URL,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  },
+});
 
 export const fetchNotes = async (params: FetchNotesParams): Promise<FetchNotesResponse> => {
   const { data } = await instance.get('/notes', { params });
@@ -39,6 +37,7 @@ export interface CreateNoteDTO {
   content: string;
   tags: NoteTag[];
 }
+
 export const createNote = async (dto: CreateNoteDTO): Promise<Note> => {
   const { data } = await instance.post('/notes', dto);
   return data;
