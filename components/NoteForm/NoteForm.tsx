@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createNote } from '@/lib/api';
+import type { NoteTag } from '@/types/note';
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
@@ -9,10 +10,15 @@ interface NoteFormProps {
 }
 
 export default function NoteForm({ onClose }: NoteFormProps) {
-  const [formData, setFormData] = useState({
+  // ✅ формально вказуємо тип NoteTag[]
+  const [formData, setFormData] = useState<{
+    title: string;
+    content: string;
+    tags: NoteTag[];
+  }>({
     title: '',
     content: '',
-    tags: ['Todo'], 
+    tags: ['Todo' as NoteTag],
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,17 +39,20 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     setLoading(true);
 
     try {
+      
       await createNote({
         title: formData.title.trim(),
         content: formData.content.trim(),
-        tags: formData.tags, 
+        tags: [...formData.tags],
       });
+
       setSuccess(true);
-      setFormData({ title: '', content: '', tags: ['Todo'] });
+      
+      setFormData({ title: '', content: '', tags: ['Todo' as NoteTag] });
       onClose();
     } catch (err) {
-      setError('Failed to create note. Please try again.');
       console.error(err);
+      setError('Failed to create note. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -76,17 +85,26 @@ export default function NoteForm({ onClose }: NoteFormProps) {
         />
       </label>
 
+      {error && <p className={css.error}>{error}</p>}
+      {success && <p className={css.success}>Note successfully created!</p>}
+
       <div className={css.buttons}>
-        <button type="submit" className={css.submitBtn} disabled={loading}>
+        <button
+          type="submit"
+          className={css.submitBtn}
+          disabled={loading}
+        >
           {loading ? 'Saving...' : 'Save note'}
         </button>
-        <button type="button" className={css.cancelBtn} onClick={onClose}>
+
+        <button
+          type="button"
+          className={css.cancelBtn}
+          onClick={onClose}
+        >
           Cancel
         </button>
       </div>
-
-      {error && <p className={css.error}>{error}</p>}
-      {success && <p className={css.success}>Note successfully created!</p>}
     </form>
   );
 }
