@@ -5,9 +5,9 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
 import Pagination from '@/components/Pagination/Pagination';
-import { SearchBox } from '@/components/SearchBox/SearchBox';
-import { Modal } from '@/components/Modal/Modal';
-import { NoteForm } from '@/components/NoteForm/NoteForm';
+import SearchBox from '@/components/SearchBox/SearchBox';
+import Modal from '@/components/Modal/Modal';
+import NoteForm from '@/components/NoteForm/NoteForm';
 import css from './NotesPage.module.css';
 
 export default function NotesClient() {
@@ -16,7 +16,13 @@ export default function NotesClient() {
 
   const queryKey = useMemo(() => ['notes', { page, search }], [page, search]);
 
-  const { data, isLoading, isFetching, isError, error } = useQuery({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey,
     queryFn: () => fetchNotes({ page, search }),
     placeholderData: keepPreviousData,
@@ -28,6 +34,7 @@ export default function NotesClient() {
     <div className={css.container}>
       <div className={css.header}>
         <h1 className={css.title}>Notes</h1>
+
         <Modal trigger={<button className={css.createButton}>Create note</button>}>
           <NoteForm onClose={() => {}} />
         </Modal>
@@ -37,7 +44,9 @@ export default function NotesClient() {
 
       {isLoading && <p className={css.status}>Loading, please wait...</p>}
       {isError && (
-        <p className={css.status}>Could not fetch the list of notes. {(error as Error)?.message}</p>
+        <p className={css.status}>
+          Could not fetch the list of notes. {(error as Error)?.message}
+        </p>
       )}
 
       {data && data.notes.length > 0 ? (
@@ -46,9 +55,14 @@ export default function NotesClient() {
         !isLoading && <p className={css.status}>No notes found.</p>
       )}
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} disabled={isFetching} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onChange={setPage}
+        disabled={isFetching}
+      />
 
-      {isFetching && !isLoading && <p className={css.status}>Updating…</p>}
+      {isFetching && !isLoading && <p className={css.status}>Updating...</p>}
     </div>
   );
 }
