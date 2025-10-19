@@ -1,37 +1,34 @@
-'use client';
-
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addNote } from '@/lib/api';
-import type { Note } from '@/types/note';
-import css from './NoteForm.module.css';
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNote, type CreateNoteDTO } from "@/lib/api"; // ⬅ заменено!
+import type { NoteTag } from "../../types/note";
+import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
   onClose: () => void;
 }
 
 const schema = Yup.object({
-  title: Yup.string().min(3).max(50).required('Required'),
+  title: Yup.string().min(3).max(50).required("Required"),
   content: Yup.string().max(500),
-  tag: Yup.mixed<Note['tag']>()
-    .oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'])
-    .required('Required'),
+  tag: Yup.mixed<NoteTag>()
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
+    .required("Required"),
 });
 
-const initialValues: Omit<Note, 'id' | 'date'> = {
-  title: '',
-  content: '',
-  tag: 'Todo',
+const initialValues: CreateNoteDTO = {
+  title: "",
+  content: "",
+  tag: "Todo",
 };
 
 export default function NoteForm({ onClose }: NoteFormProps) {
   const qc = useQueryClient();
-
   const mutation = useMutation({
-    mutationFn: (payload: typeof initialValues) => addNote(payload),
+    mutationFn: (payload: CreateNoteDTO) => createNote(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['notes'] });
+      qc.invalidateQueries({ queryKey: ["notes"] });
       onClose();
     },
   });
@@ -52,13 +49,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
 
           <div className={css.formGroup}>
             <label htmlFor="content">Content</label>
-            <Field
-              as="textarea"
-              id="content"
-              name="content"
-              rows={8}
-              className={css.textarea}
-            />
+            <Field as="textarea" id="content" name="content" rows={8} className={css.textarea} />
             <ErrorMessage name="content" component="span" className={css.error} />
           </div>
 

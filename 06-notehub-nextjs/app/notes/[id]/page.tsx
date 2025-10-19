@@ -1,24 +1,22 @@
-import { NoteDetails } from './NoteDetails.client';
-import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import NoteDetailsClient from './NoteDetails.client';
 import { fetchNoteById } from '@/lib/api';
 
-interface PageProps {
-  params: { id: string };
-}
-
-export default async function NotePage({ params }: PageProps) {
+export default async function NoteDetailsPage({ params }: { params: { id: string } }) {
   const queryClient = new QueryClient();
 
-  const noteId = Number(params.id);
-
-  await queryClient.prefetchQuery({
-    queryKey: ['note', noteId],
-    queryFn: () => fetchNoteById(noteId),
-  });
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ['note', params.id],
+      queryFn: () => fetchNoteById(params.id),
+    });
+  } catch (error) {
+    console.error('SSR Prefetch failed:', error);
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetails />
+      <NoteDetailsClient id={params.id} />
     </HydrationBoundary>
   );
 }
