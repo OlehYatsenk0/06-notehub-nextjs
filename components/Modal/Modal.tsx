@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react'; 
+import React, { useState, ReactElement } from 'react';
 import css from './Modal.module.css';
 
 interface ModalProps {
-  trigger: React.ReactElement;
+  trigger: ReactElement<{ onClick?: () => void }>;
   children: React.ReactNode;
 }
 
@@ -14,9 +14,14 @@ export default function Modal({ trigger, children }: ModalProps) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+ 
+  const triggerWithHandler = React.cloneElement(trigger, {
+    onClick: handleOpen,
+  });
+
   return (
     <>
-      {React.cloneElement(trigger, { onClick: handleOpen })}
+      {triggerWithHandler}
 
       {open && (
         <div className={css.backdrop} onClick={handleClose}>
