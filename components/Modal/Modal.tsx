@@ -1,45 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 
-export default function Modal({
-  trigger,
-  children,
-}: {
-  trigger: React.ReactNode;
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
+}
 
+export default function Modal({ isOpen, onClose, children }: ModalProps) {
   useEffect(() => {
-    const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
-    if (open) {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
       document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', onEsc);
-    } else {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', onEsc);
+      window.addEventListener('keydown', handleKey);
     }
-    return () => window.removeEventListener('keydown', onEsc);
-  }, [open]);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [isOpen, onClose]);
 
-  return (
-    <>
-      <span onClick={() => setOpen(true)}>{trigger}</span>
-      {open &&
-        createPortal(
-          <div className={css.backdrop} onClick={() => setOpen(false)}>
-            <div className={css.modal} onClick={(e) => e.stopPropagation()}>
-              <button className={css.closeBtn} onClick={() => setOpen(false)}>
-                ✕
-              </button>
-              {children}
-            </div>
-          </div>,
-          document.body
-        )}
-    </>
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className={css.backdrop} onClick={onClose}>
+      <div className={css.modal} onClick={e => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>,
+    document.body
   );
 }

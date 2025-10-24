@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
@@ -13,38 +13,70 @@ import css from './NotesPage.module.css';
 export default function NotesClient() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [isModalOpen, setModalOpen] = useState(false);
 
-  const queryKey = useMemo(() => ['notes', { page, search }], [page, search]);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const queryKey = useMemo(
+    () => ['notes', { page, search: debouncedSearch }],
+    [page, debouncedSearch]
+  );
 
   const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey,
-    queryFn: () => fetchNotes({ page, search }),
+    queryFn: () => fetchNotes({ page, search: debouncedSearch }),
     placeholderData: keepPreviousData,
+    refetchOnMount: false, 
+    refetchOnWindowFocus: false,
   });
 
   const totalPages = data?.totalPages ?? 1;
 
   return (
-    <div className={css.container}>
-      <div className={css.header}>
-        <h1 className={css.title}>Notes</h1>
-        <Modal trigger={<button className={css.createButton}>Create note</button>}>
-          <NoteForm />
-        </Modal>
+    <div className={css.app}>
+      <div className={css.toolbar}>
+        
+        <SearchBox onSearch={setSearch} />
+
+        
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            isFetching={isFetching}
+          />
+        )}
+
+       
+        <button
+          className={css.button}
+          type="button"
+          onClick={() => setModalOpen(true)}
+        >
+          Create note +
+        </button>
       </div>
 
-      <SearchBox onSearch={(v) => { setSearch(v); setPage(1); }} />
-
+      
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Error: {(error as Error).message}</p>}
       {data && <NoteList notes={data.notes} />}
 
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        isFetching={isFetching}
-      />
+      
+      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
+        <NoteForm
+          onCancel={() => setModalOpen(false)}
+          onSuccess={() => setModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }
