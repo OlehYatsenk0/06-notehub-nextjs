@@ -51,7 +51,6 @@ export default function NotesClient() {
             currentPage={page}
             totalPages={totalPages}
             onPageChange={setPage}
-            isFetching={isFetching}
           />
         )}
 
